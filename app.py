@@ -8,13 +8,11 @@ from sklearn.preprocessing import LabelEncoder
 import os
 import traceback
 
-# Set device
+# Setting up my device
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
-# ----------------------------
-# Define your actual model architecture
-# ----------------------------
+# Model architecture
 class ECGCNN(nn.Module):
     def __init__(self, num_classes=5):
         super(ECGCNN, self).__init__()
@@ -37,7 +35,7 @@ class ECGCNN(nn.Module):
             nn.MaxPool1d(kernel_size=2, stride=2)
         )
 
-        # Calculate the size after convolutional layers
+        # I calculated the size after convolutional layers
         self._to_linear = None
         self._calculate_conv_output_size((1, 1, 180))
 
@@ -60,9 +58,7 @@ class ECGCNN(nn.Module):
         x = self.classifier(x)
         return x
 
-# ----------------------------
 # Model loading with detailed diagnostics
-# ----------------------------
 def load_model_with_diagnostics():
     """Load model with detailed error reporting"""
     MODEL_PATH = "ecg_cnn_model.pth"
@@ -123,14 +119,18 @@ def load_model_with_diagnostics():
         traceback.print_exc()
         return None, error_msg
 
-# ----------------------------
 # Initialize model and components
-# ----------------------------
 model, load_error = load_model_with_diagnostics()
 
 # Create label encoder
+# FIX: the model was trained with scikit-learn's LabelEncoder, which sorts class names
+# alphabetically, so the model's output indices 0..4 are A, L, N, R, V (not N, L, R, V, A).
+# Confirm with print(le.classes_) in the training notebook and change this line if it differs.
 label_encoder = LabelEncoder()
-label_encoder.classes_ = np.array(['N', 'L', 'R', 'V', 'A'])
+label_encoder.classes_ = np.array(['A', 'L', 'N', 'R', 'V'])
+
+# Order in which classes are listed on screen (keeps the interface exactly as before)
+DISPLAY_ORDER = ['N', 'L', 'R', 'V', 'A']
 
 # Annotation mapping
 annotation_map = {
@@ -141,26 +141,14 @@ annotation_map = {
     'A': 'Atrial Premature Beat'
 }
 
-# ----------------------------
 # ECG preprocessing function
-# ----------------------------
 def preprocess_ecg(ecg_signal):
     """Preprocess ECG signal for model input"""
-    # Ensure we have exactly 180 samples (model requirement)
-    if len(ecg_signal) != 180:
-        ecg_signal = np.interp(
-            np.linspace(0, len(ecg_signal) - 1, 180),
-            np.arange(len(ecg_signal)),
-            ecg_signal
-        )
-    
-    # Normalize the signal
+    # Only normalize - NO interpolation
     ecg_signal = (ecg_signal - np.mean(ecg_signal)) / (np.std(ecg_signal) + 1e-8)
     return torch.FloatTensor(ecg_signal).unsqueeze(0).unsqueeze(0).to(device)
 
-# ----------------------------
-# Main analysis function - NO DUMMY DATA
-# ----------------------------
+# Analysis function
 def analyze_ecg(ecg_input):
     """Main function to analyze ECG input"""
     if model is None:
@@ -175,7 +163,7 @@ def analyze_ecg(ecg_input):
     try:
         # Parse and validate input
         if not ecg_input.strip():
-            return "**Oloche AI Assistant:** Please enter ECG values", None
+            return "**Oloche's AI Assistant:** Please enter ECG values", None
         
         # Parse ECG values
         ecg_values = []
@@ -185,14 +173,19 @@ def analyze_ecg(ecg_input):
                 try:
                     ecg_values.append(float(val))
                 except ValueError:
-                    return f"**Oloche AI Assistant:** Invalid value '{val}'. Please enter only numbers separated by commas.", None
+                    return f"**Oloche's AI Assistant:** Invalid value '{val}'. Please enter only numbers separated by commas.", None
+        
+        #VALIDATION CHECK
+        if len(ecg_values) != 180:
+            return f"**Oloche's Assistant:** Invalid input length, please provide exactly 180 values. You provided {len(ecg_values)}. Please check for extra commas or spaces.", None
+
         
         if len(ecg_values) < 10:
-            return "**Oloche AI Assistant:** Please enter at least 10 ECG values", None
+            return "**Oloche's AI Assistant:** Please enter at least 10 ECG values", None
         
         ecg_signal = np.array(ecg_values)
         
-        # Preprocess and make prediction
+        # Preprocess and model prediction
         processed = preprocess_ecg(ecg_signal)
         
         with torch.no_grad():
@@ -204,7 +197,7 @@ def analyze_ecg(ecg_input):
             class_name = label_encoder.inverse_transform([class_idx])[0]
             confidence = probabilities[0, class_idx].item()
         
-        # Create visualization with white background and black text
+        # Visualizations with white background and black text
         plt.style.use('default')
         fig, ax = plt.subplots(figsize=(16, 6))
         ax.plot(ecg_signal, color='#3498db', linewidth=2)
@@ -217,7 +210,7 @@ def analyze_ecg(ecg_input):
         ax.set_facecolor('white')
         fig.patch.set_facecolor('white')
         
-        # Add prediction info
+        # Addition of prediction info
         prediction_text = f"Prediction: {annotation_map.get(class_name, class_name)}\nConfidence: {confidence:.2%}"
         ax.text(0.02, 0.98, prediction_text, transform=ax.transAxes, verticalalignment='top',
                bbox=dict(boxstyle='round', facecolor='white', alpha=0.9, edgecolor='#3498db'), 
@@ -225,13 +218,16 @@ def analyze_ecg(ecg_input):
         
         plt.tight_layout()
         
-        # Prepare results
+        # Results
         result = f"## ECG Analysis Results\n\n"
         result += f"**Prediction:** {annotation_map.get(class_name, class_name)}\n"
         result += f"**Confidence:** {confidence:.2%}\n\n"
         result += "**Probability Distribution:**\n"
         
-        for i, cls in enumerate(label_encoder.classes_):
+        # Listed in the original on-screen order (N, L, R, V, A); each probability is read
+        # from the model output position that matches its class in label_encoder.classes_
+        for cls in DISPLAY_ORDER:
+            i = list(label_encoder.classes_).index(cls)
             prob = probabilities[0, i].item()
             result += f"- {annotation_map.get(cls, cls)}: {prob:.2%}\n"
         
@@ -246,17 +242,16 @@ def analyze_ecg(ecg_input):
         return result, fig
         
     except Exception as e:
-        return f"**Oloche AI Assistant encountered an error during analysis:** {str(e)}", None
+        return f"**Oloche's Assistant encountered an error during analysis:** {str(e)}", None
 
-# ----------------------------
+
 # Gradio UI with Enhanced Layout
-# ----------------------------
 custom_css = """
 .gradio-container {
     max-width: 100% !important;
     margin: 0 auto !important;
     padding: 20px !important;
-    background: #000000 !important; /* Dark gray background */
+    background: #000000 !important; /* Black background */
     color: #ffffff !important; /* White text */
     font-family: 'Arial', sans-serif;
 }
@@ -435,11 +430,11 @@ with gr.Blocks(css=custom_css, title="ECG Classification System") as demo:
     
     gr.Markdown("""
     <div class="header" style="text-align: center;">
-    <h1 style="text-align: center; font-weight: 1,000 !important;">Oloche'S AI Cardiologist: ECG Arrhythmia Classifier</h1>
+    <h1 style="text-align: center; font-weight: 1,000 !important;">Oloche's ECG Signal Analysis and Arrhythmia Classification</h1>
     </div>
     """)
     
-    # Show model status
+    # Model status
     if model is None:
         gr.Markdown(f"""
         <div class="error-box">
@@ -451,8 +446,8 @@ with gr.Blocks(css=custom_css, title="ECG Classification System") as demo:
     else:
         gr.Markdown("""
         <div class="success-box">
-              <p>This system uses convolutional neural networks (CNNs) trained on datasets from the MIT-BIH Arrhythmia Database to detect cardiac arrhythmias through real-time ECG signal analysis. Kindly input 180 comma-separated numerical values representing an ECG signal, and the system will classify it into one of five distinct arrhythmia categories: Normal (N), Left Bundle Branch Block (L), Right Bundle Branch Block (R), Premature Ventricular Contraction (V), or Atrial Premature Beat (A).
-              The model is reliable and achieves high performance in detecting abnormal cardiac rhythms and underlying heart diseases, serving as a quick-diagnostic tool for cardiologists, biomedical researchers, industry experts, and medical professionals.</p>
+              <p style="font-size: 10px; line-height: 1.4">This system uses convolutional neural networks trained on datasets from the MIT-BIH Arrhythmia Database to detect cardiac arrhythmias through real-time ECG signal analysis. Kindly input 180 comma-separated numerical values representing an ECG signal, and the system will classify it into one of five distinct arrhythmia categories: Normal (N), Left Bundle Branch Block (L), Right Bundle Branch Block (R), Premature Ventricular Contraction (V), or Atrial Premature Beat (A).
+              The model is reliable and achieves high performance in detecting abnormal cardiac rhythms and underlying heart diseases, serving as a quick tool for cardiologists, graduate students, biomedical researchers, industry experts, and medical professionals.</p>
             <h5>Ready for ECG signal analysis</h5>
         </div>
         """)
@@ -509,7 +504,7 @@ with gr.Blocks(css=custom_css, title="ECG Classification System") as demo:
             <li><strong>A</strong>: Atrial Premature Beat</li>
         </ul>
         <br>
-        <p>Researcher: Eije, Oloche Celestine</p>
+        <p><strong>Researcher: Eije, Oloche Celestine</strong></p>
     </div>
     """)
     
@@ -533,9 +528,7 @@ with gr.Blocks(css=custom_css, title="ECG Classification System") as demo:
         outputs=[output_text, output_plot]
     )
 
-# ----------------------------
 # Launch application
-# ----------------------------
 if __name__ == "__main__":
     print("=" * 60)
     print("ECG Classification App - Using Oloche's Trained Model")
