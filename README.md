@@ -13,11 +13,10 @@ A state-of-the-art deep learning system for automated detection and classificati
 **Web application of this work:** [https://huggingface.co/spaces/eijeoloche1/ECG_Arrhythmia_Classification](https://huggingface.co/spaces/eijeoloche1/ECG_Arrhythmia_Classification)  
 **Project title:** The user-friendly web app of this work is titled "Oloche's AI Cardiologist: ECG Arrhythmia Classifier", while its research title is "Leveraging 1D CNNs for Automated Multi-Class Arrhythmia Diagnosis from Single-Lead ECG Signals".
 
-<img width="1488" height="824" alt="image" src="https://github.com/user-attachments/assets/03ef9e82-a44a-48ff-a2b4-8a618fa68509" />
+<img width="1450" height="799" alt="image" src="https://github.com/user-attachments/assets/3435a81a-47f5-4ee0-8817-c13e18a05415" />
+<img width="1440" height="809" alt="image" src="https://github.com/user-attachments/assets/cd40a404-bf05-4fd6-88ec-34340cde6e42" />
+<img width="1444" height="237" alt="image" src="https://github.com/user-attachments/assets/7ec49d26-4f36-41d6-98f1-723f9b1477ff" />
 
-<img width="1460" height="798" alt="image" src="https://github.com/user-attachments/assets/a599e7dd-d139-4a84-ab5e-966d45b500e7" />
-
-<img width="1452" height="252" alt="image" src="https://github.com/user-attachments/assets/05206786-0c34-4d0d-913d-c0b4b97d5d30" />
 
 ## Project Overview
 
