@@ -1,6 +1,6 @@
 # README.md
 
-# Oloche's AI Cardiologist: ECG Arrhythmia Classifier
+# Oloche's ECG Signal Analysis and Arrhythmia Classification
 
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
 ![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-EE4C2C)
@@ -13,12 +13,20 @@ A state-of-the-art deep learning system for automated detection and classificati
 **Web application of this work:** [https://huggingface.co/spaces/eijeoloche1/ECG_Arrhythmia_Classification](https://huggingface.co/spaces/eijeoloche1/ECG_Arrhythmia_Classification)  
 **Project title:** The user-friendly web app of this work is titled "Oloche's AI Cardiologist: ECG Arrhythmia Classifier", while its research title is "Leveraging 1D CNNs for Automated Multi-Class Arrhythmia Diagnosis from Single-Lead ECG Signals".
 
+<img width="1488" height="824" alt="image" src="https://github.com/user-attachments/assets/03ef9e82-a44a-48ff-a2b4-8a618fa68509" />
+
+<img width="1460" height="798" alt="image" src="https://github.com/user-attachments/assets/a599e7dd-d139-4a84-ab5e-966d45b500e7" />
+
+<img width="1452" height="252" alt="image" src="https://github.com/user-attachments/assets/05206786-0c34-4d0d-913d-c0b4b97d5d30" />
+
 ## Project Overview
 
 Cardiac arrhythmias are a leading cause of morbidity and mortality worldwide. This project leverages deep learning to create an assistive tool that automatically classifies heartbeats into five distinct arrhythmia categories, providing clinicians and researchers with instantaneous analysis. The system demonstrates a complete pipeline from model design and training to deployment as a publicly accessible web application, showcasing the potential of AI-driven diagnostic tools in biomedical engineering.
 
 ## Challenges with uploading "ecg_cnn_model" on Github
 The pre-trained model weights for this project (ecg_cnn_model.pth) are approximately 73MB in size. GitHub enforces a strict file size limit of 100 MB per file to maintain the performance and efficiency of their version control system. To comply with this policy and ensure the repository remains lightweight and easy to clone, the model file cannot be hosted directly on GitHub. Thus, I uploaded it on my Google drive. Find attached the link (https://drive.google.com/file/d/1uSyVTFig3eo4S767TmAPftc5bkbNW_NW/view?usp=sharing)
+
+
 
 ## Research Challenges
 This project revealed critical challenges in medical AI deployment:
